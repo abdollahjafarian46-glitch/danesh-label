@@ -11,7 +11,7 @@
 </head>
 <body><main class="wrap">
 <h1>لیبل‌ساز دانش</h1>
-<p class="sub no-print">برای هر عکس تعداد، اندازه و جایگاه جداگانه تعیین کن. اندازه‌ها واقعی و برحسب میلی‌متر هستند.</p>
+<p class="sub no-print">برای هر عکس تعداد، اندازه و فاصله تا عکس بعدی را جداگانه برحسب میلی‌متر تنظیم کن.</p>
 <section class="panel no-print">
 <strong>۱) عکس‌ها</strong><div id="items"></div>
 <button class="btn secondary" id="add">＋ افزودن عکس دیگر</button>
@@ -26,10 +26,10 @@
 <div><label for="mb">پایین</label><input id="mb" type="number" min="0" max="50" step=".5" value="5"></div>
 <div><label for="ml">چپ</label><input id="ml" type="number" min="0" max="50" step=".5" value="5"></div>
 </div>
-<label for="gap">فاصله پیشنهادی بین عکس‌ها (میلی‌متر)</label><input id="gap" type="number" min="0" max="30" step=".5" value="2">
+
 <button class="btn" id="refresh">به‌روزرسانی پیش‌نمایش</button>
 <button class="btn secondary" id="print">چاپ / ذخیره PDF</button>
-<div class="note" id="status">عکس‌ها به ترتیب اضافه‌شدن، پشت سر هم چیده می‌شوند و روی هم نمی‌افتند. اندازه هر عکس مستقل است.</div>
+<div class="note" id="status">عکس‌ها از سمت راست برگه شروع می‌شوند، هر ردیف را به سمت چپ پر می‌کنند و سپس به ردیف بعد می‌روند.</div>
 </section>
 <section class="panel print-panel"><strong class="no-print">۳) پیش‌نمایش A4</strong>
 <div id="preview" style="margin-top:12px"><div class="page" id="page"></div></div>
@@ -49,7 +49,7 @@ function renderEntries(){
   const file=document.createElement('input');file.type='file';file.accept='image/*';file.setAttribute('aria-label','انتخاب عکس');
   file.onchange=()=>{const f=file.files&&file.files[0];if(!f)return;if(e.url)URL.revokeObjectURL(e.url);e.url=URL.createObjectURL(f);renderEntries();build();};top.append(file);card.append(top);
   const fields=document.createElement('div');fields.className='itemgrid';
-  [['تعداد','count',1,300,1],['عرض (میلی‌متر)','w',1,297,.5],['ارتفاع (میلی‌متر)','h',1,297,.5]].forEach(([label,key,min,max,step])=>{
+  [['تعداد','count',1,300,1],['عرض (میلی‌متر)','w',1,297,.5],['ارتفاع (میلی‌متر)','h',1,297,.5],['فاصله تا عکس بعدی (میلی‌متر)','gap',0,30,.5]].forEach(([label,key,min,max,step])=>{
    const wrap=document.createElement('div'),lab=document.createElement('label'),inp=document.createElement('input');lab.textContent=label;inp.type='number';inp.min=min;inp.max=max;inp.step=step;inp.value=e[key];inp.oninput=()=>{e[key]=Math.max(min,Math.min(max,Number(inp.value)||0));build();};wrap.append(lab,inp);fields.append(wrap);
   });card.append(fields);root.append(card);
  });
@@ -60,25 +60,25 @@ function build(){
  const top=n('mt',5),right=n('mr',5),bottom=n('mb',5),left=n('ml',5),gap=n('gap',2);
  const usableW=PW-left-right,usableH=PH-top-bottom,page=$('page');page.innerHTML='';
  page.style.aspectRatio=landscape?'297/210':'210/297';page.style.width='min(100%, '+(landscape?'594px':'420px')+')';
- let placed=0,overflow=0,cursorX=left,cursorY=top,rowH=0;
- entries.forEach(e=>{
-  if(!e.url)return;
-  for(let i=0;i<e.count;i++){
-   const w=e.w,h=e.h;
-   if(w>usableW||h>usableH){overflow++;continue;}
-   // Flow every copy across the page in a single sequence; never stack different images at X=0,Y=0.
-   if(cursorX+w>PW-right+0.01){cursorX=left;cursorY+=rowH+gap;rowH=0;}
-   if(cursorY+h>PH-bottom+0.01){overflow++;continue;}
-   const node=document.createElement('div');node.className='label';
-   node.style.left=(cursorX/PW*100)+'%';node.style.top=(cursorY/PH*100)+'%';
-   node.style.width=(w/PW*100)+'%';node.style.height=(h/PH*100)+'%';
-   const img=document.createElement('img');img.src=e.url;img.alt='لیبل';img.style.objectFit=$('fit').value;node.append(img);page.append(node);
-   placed++;cursorX+=w+gap;rowH=Math.max(rowH,h);
-  }
+ let placed=0,overflow=0,cursorX=PW-right,cursorY=top,rowH=0,previousGap=0;
+ const sequence=[];
+ entries.forEach(e=>{if(e.url){for(let i=0;i<e.count;i++)sequence.push(e);}});
+ sequence.forEach((e,index)=>{
+  const w=e.w,h=e.h,gapAfter=Math.max(0,Number(e.gap)||0);
+  if(w>usableW||h>usableH){overflow++;previousGap=gapAfter;return;}
+  // RTL flow: each image controls the gap before the next image.
+  if(cursorX-w<left-0.01){cursorX=PW-right;cursorY+=rowH+previousGap;rowH=0;}
+  if(cursorY+h>PH-bottom+0.01){overflow++;previousGap=gapAfter;return;}
+  const x=cursorX-w;
+  const node=document.createElement('div');node.className='label';
+  node.style.left=(x/PW*100)+'%';node.style.top=(cursorY/PH*100)+'%';
+  node.style.width=(w/PW*100)+'%';node.style.height=(h/PH*100)+'%';
+  const img=document.createElement('img');img.src=e.url;img.alt='لیبل';img.style.objectFit=$('fit').value;node.append(img);page.append(node);
+  placed++;cursorX=x-gapAfter;rowH=Math.max(rowH,h);previousGap=gapAfter;
  });
- $('status').textContent=`تعداد چیده‌شده: ${placed} عدد. عکس‌ها به ترتیب ورود، پشت سر هم و بدون هم‌پوشانی چیده می‌شوند.`+(overflow?` ${overflow} عدد به‌دلیل کمبود فضای برگه در A4 جا نشد.`:'');
+ $('status').textContent=`تعداد چیده‌شده: ${placed} عدد. فاصله هر عکس از عکس بعدی از تنظیم همان عکس گرفته می‌شود؛ چیدمان از راست به چپ و سپس ردیف بعدی است.`+(overflow?` ${overflow} عدد به‌دلیل کمبود فضای برگه در A4 جا نشد.`:'');
 }
-$('add').onclick=addEntry;$('refresh').onclick=build;['mt','mr','mb','ml','gap','orient','fit'].forEach(id=>$(id).addEventListener('input',build));
+$('add').onclick=addEntry;$('refresh').onclick=build;['mt','mr','mb','ml','orient','fit'].forEach(id=>$(id).addEventListener('input',build));
 $('print').onclick=()=>{if(!entries.some(e=>e.url)){ $('status').textContent='ابتدا حداقل یک عکس انتخاب کن.';return;}build();window.print();};
 addEntry();build();
 </script></body></html>
