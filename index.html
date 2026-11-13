@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>لیبل‌ساز دانش</title>
 <style>
-*{box-sizing:border-box}body{margin:0;padding:14px;background:#f3f5f7;color:#17202a;font-family:Tahoma,Arial,sans-serif}.wrap{max-width:780px;margin:auto}h1{font-size:22px;margin:8px 0}.sub,.note{font-size:13px;line-height:1.8;color:#596775}.panel{background:#fff;border-radius:15px;padding:15px;margin:13px 0;box-shadow:0 2px 12px #0000000b}label{display:block;font-size:14px;font-weight:700;margin:10px 0 6px}input,select{width:100%;padding:10px;border:1px solid #cbd3da;border-radius:9px;font:inherit;background:#fff}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.margins{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:11px;padding:13px;font:inherit;font-weight:700;background:#167d55;color:white;width:100%;margin-top:10px}.secondary{background:#e9eef1;color:#17202a}.danger{background:#fff0f0;color:#a52626;padding:8px 11px;width:auto;margin:0}.item{border:1px solid #dce2e7;border-radius:12px;padding:12px;margin:10px 0}.itemhead{display:flex;align-items:center;justify-content:space-between;gap:8px}.itemhead strong{font-size:14px}.itemgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item img.thumb{width:64px;height:64px;object-fit:contain;border-radius:8px;background:#f1f3f5}.itemtop{display:flex;align-items:center;gap:10px}.itemtop input[type=file]{font-size:12px;padding:7px}#preview{background:#dfe4e8;padding:12px;border-radius:10px;overflow:auto;text-align:center}.page{position:relative;background:white;width:min(100%,420px);aspect-ratio:210/297;margin:auto;box-shadow:0 2px 10px #0002;overflow:hidden}.label{position:absolute;display:flex;align-items:center;justify-content:center;overflow:hidden}.label img{width:100%;height:100%;display:block}.summary{font-size:13px;line-height:1.8;color:#43515e}
+*{box-sizing:border-box}body{margin:0;padding:14px;background:#f3f5f7;color:#17202a;font-family:Tahoma,Arial,sans-serif}.wrap{max-width:780px;margin:auto}h1{font-size:22px;margin:8px 0}.sub,.note{font-size:13px;line-height:1.8;color:#596775}.panel{background:#fff;border-radius:15px;padding:15px;margin:13px 0;box-shadow:0 2px 12px #0000000b}label{display:block;font-size:14px;font-weight:700;margin:10px 0 6px}input,select{width:100%;padding:10px;border:1px solid #cbd3da;border-radius:9px;font:inherit;background:#fff}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.margins{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:11px;padding:13px;font:inherit;font-weight:700;background:#167d55;color:white;width:100%;margin-top:10px}.secondary{background:#e9eef1;color:#17202a}.danger{background:#fff0f0;color:#a52626;padding:8px 11px;width:auto;margin:0}.item{border:1px solid #dce2e7;border-radius:12px;padding:12px;margin:10px 0}.itemhead{display:flex;align-items:center;justify-content:space-between;gap:8px}.itemhead strong{font-size:14px}.itemgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item img.thumb{width:64px;height:64px;object-fit:contain;border-radius:8px;background:#f1f3f5}.itemtop{display:flex;align-items:center;gap:10px}.itemtop input[type=file]{font-size:12px;padding:7px;min-width:0}.filename{font-size:12px;color:#167d55;overflow-wrap:anywhere}.itemtop{flex-wrap:wrap}#preview{background:#dfe4e8;padding:12px;border-radius:10px;overflow:auto;text-align:center}.page{position:relative;background:white;width:min(100%,420px);aspect-ratio:210/297;margin:auto;box-shadow:0 2px 10px #0002;overflow:hidden}.label{position:absolute;display:flex;align-items:center;justify-content:center;overflow:hidden}.label img{width:100%;height:100%;display:block}.summary{font-size:13px;line-height:1.8;color:#43515e}
 @media print{@page{size:A4 portrait;margin:0}body{padding:0;margin:0;background:#fff}.no-print{display:none!important}.print-panel{padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important}#preview{padding:0!important;background:#fff!important;overflow:visible!important}.page{width:210mm!important;height:297mm!important;aspect-ratio:auto!important;margin:0!important;box-shadow:none!important}}
 </style>
 </head>
@@ -26,7 +26,6 @@
 <div><label for="mb">پایین</label><input id="mb" type="number" min="0" max="50" step=".5" value="5"></div>
 <div><label for="ml">چپ</label><input id="ml" type="number" min="0" max="50" step=".5" value="5"></div>
 </div>
-
 <button class="btn" id="refresh">به‌روزرسانی پیش‌نمایش</button>
 <button class="btn secondary" id="print">چاپ / ذخیره PDF</button>
 <div class="note" id="status">عکس‌ها از سمت راست برگه شروع می‌شوند، هر ردیف را به سمت چپ پر می‌کنند و سپس به ردیف بعد می‌روند.</div>
@@ -37,7 +36,7 @@
 </section></main>
 <script>
 const $=id=>document.getElementById(id);let entries=[],seq=0;
-function addEntry(){entries.push({id:++seq,url:null,count:1,w:30,h:30,x:0,y:0});renderEntries();}
+function addEntry(){entries.push({id:++seq,url:null,count:1,w:30,h:30,gap:0});renderEntries();build();}
 function renderEntries(){
  const root=$('items');root.innerHTML='';
  entries.forEach((e,index)=>{
@@ -45,9 +44,18 @@ function renderEntries(){
   const head=document.createElement('div');head.className='itemhead';const title=document.createElement('strong');title.textContent=`عکس ${index+1}`;
   const del=document.createElement('button');del.className='btn danger';del.textContent='حذف';del.onclick=()=>{if(e.url)URL.revokeObjectURL(e.url);entries=entries.filter(x=>x.id!==e.id);renderEntries();build();};head.append(title,del);card.append(head);
   const top=document.createElement('div');top.className='itemtop';top.style.marginTop='9px';
-  if(e.url){const img=document.createElement('img');img.className='thumb';img.src=e.url;top.append(img);}
+  const img=document.createElement('img');img.className='thumb';img.alt='پیش‌نمایش عکس';img.hidden=!e.url;if(e.url)img.src=e.url;top.append(img);
   const file=document.createElement('input');file.type='file';file.accept='image/*';file.setAttribute('aria-label','انتخاب عکس');
-  file.onchange=()=>{const f=file.files&&file.files[0];if(!f)return;if(e.url)URL.revokeObjectURL(e.url);e.url=URL.createObjectURL(f);renderEntries();build();};top.append(file);card.append(top);
+  const filename=document.createElement('span');filename.className='filename';filename.textContent=e.filename||'هنوز عکسی انتخاب نشده است';
+  file.onchange=()=>{
+   const f=file.files&&file.files[0];if(!f)return;
+   if(!f.type.startsWith('image/')){filename.textContent='لطفاً یک فایل تصویری انتخاب کن.';file.value='';return;}
+   if(e.url)URL.revokeObjectURL(e.url);
+   e.url=URL.createObjectURL(f);e.filename=f.name;
+   img.src=e.url;img.hidden=false;filename.textContent='انتخاب شد: '+f.name;
+   build();
+  };
+  top.append(file,filename);card.append(top);
   const fields=document.createElement('div');fields.className='itemgrid';
   [['تعداد','count',1,300,1],['عرض (میلی‌متر)','w',1,297,.5],['ارتفاع (میلی‌متر)','h',1,297,.5],['فاصله تا عکس بعدی (میلی‌متر)','gap',0,30,.5]].forEach(([label,key,min,max,step])=>{
    const wrap=document.createElement('div'),lab=document.createElement('label'),inp=document.createElement('input');lab.textContent=label;inp.type='number';inp.min=min;inp.max=max;inp.step=step;inp.value=e[key];inp.oninput=()=>{e[key]=Math.max(min,Math.min(max,Number(inp.value)||0));build();};wrap.append(lab,inp);fields.append(wrap);
@@ -57,28 +65,23 @@ function renderEntries(){
 function n(id,d=0){const v=parseFloat($(id).value);return Number.isFinite(v)?Math.max(0,v):d;}
 function build(){
  const landscape=$('orient').value==='landscape',PW=landscape?297:210,PH=landscape?210:297;
- const top=n('mt',5),right=n('mr',5),bottom=n('mb',5),left=n('ml',5),gap=n('gap',2);
- const usableW=PW-left-right,usableH=PH-top-bottom,page=$('page');page.innerHTML='';
+ const top=n('mt',5),right=n('mr',5),bottom=n('mb',5),left=n('ml',5),page=$('page');page.innerHTML='';
  page.style.aspectRatio=landscape?'297/210':'210/297';page.style.width='min(100%, '+(landscape?'594px':'420px')+')';
  let placed=0,overflow=0,cursorX=PW-right,cursorY=top,rowH=0,previousGap=0;
- const sequence=[];
- entries.forEach(e=>{if(e.url){for(let i=0;i<e.count;i++)sequence.push(e);}});
- sequence.forEach((e,index)=>{
+ const sequence=[];entries.forEach(e=>{if(e.url){for(let i=0;i<e.count;i++)sequence.push(e);}});
+ sequence.forEach(e=>{
   const w=e.w,h=e.h,gapAfter=Math.max(0,Number(e.gap)||0);
-  if(w>usableW||h>usableH){overflow++;previousGap=gapAfter;return;}
-  // RTL flow: each image controls the gap before the next image.
+  if(w>PW-left-right||h>PH-top-bottom){overflow++;previousGap=gapAfter;return;}
   if(cursorX-w<left-0.01){cursorX=PW-right;cursorY+=rowH+previousGap;rowH=0;}
   if(cursorY+h>PH-bottom+0.01){overflow++;previousGap=gapAfter;return;}
-  const x=cursorX-w;
-  const node=document.createElement('div');node.className='label';
-  node.style.left=(x/PW*100)+'%';node.style.top=(cursorY/PH*100)+'%';
-  node.style.width=(w/PW*100)+'%';node.style.height=(h/PH*100)+'%';
+  const x=cursorX-w,node=document.createElement('div');node.className='label';
+  node.style.left=(x/PW*100)+'%';node.style.top=(cursorY/PH*100)+'%';node.style.width=(w/PW*100)+'%';node.style.height=(h/PH*100)+'%';
   const img=document.createElement('img');img.src=e.url;img.alt='لیبل';img.style.objectFit=$('fit').value;node.append(img);page.append(node);
   placed++;cursorX=x-gapAfter;rowH=Math.max(rowH,h);previousGap=gapAfter;
  });
  $('status').textContent=`تعداد چیده‌شده: ${placed} عدد. فاصله هر عکس از عکس بعدی از تنظیم همان عکس گرفته می‌شود؛ چیدمان از راست به چپ و سپس ردیف بعدی است.`+(overflow?` ${overflow} عدد به‌دلیل کمبود فضای برگه در A4 جا نشد.`:'');
 }
 $('add').onclick=addEntry;$('refresh').onclick=build;['mt','mr','mb','ml','orient','fit'].forEach(id=>$(id).addEventListener('input',build));
-$('print').onclick=()=>{if(!entries.some(e=>e.url)){ $('status').textContent='ابتدا حداقل یک عکس انتخاب کن.';return;}build();window.print();};
-addEntry();build();
+$('print').onclick=()=>{if(!entries.some(e=>e.url)){$('status').textContent='ابتدا حداقل یک عکس انتخاب کن.';return;}build();window.print();};
+addEntry();
 </script></body></html>
